@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>v11 Model Comparison — Project VOICE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8fafd;
+    --surface: #fff;
+    --text: #202124;
+    --text-secondary: #5f6368;
+    --outline: #bdbdbd;
+    --primary: #fcc934;
+    --on-primary: #202124;
+    --secondary: #e8f0fe;
+    --on-secondary: #202124;
+    --block-bg: #ededf0;
+    --block-text: #000;
+    --block-active: #fcc934;
+    --blue: #8ab4f8;
+    --separator: #dadce0;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Noto Sans JP', Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16191e;
+      --surface: #000;
+      --text: #fff;
+      --text-secondary: #9aa0a6;
+      --outline: #5f5f5f;
+      --primary: #8b701d;
+      --on-primary: #fff;
+      --secondary: #25262c;
+      --on-secondary: #fff;
+      --block-bg: #4d4d51;
+      --block-text: #fff;
+      --block-active: #fcc934;
+      --blue: #8ab4f8;
+      --separator: #3c4043;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; overflow-y: auto; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === SCREEN LAYOUT === */
+  .screen { display: flex; flex-direction: column; height: 100vh; }
+
+  /* --- Text display --- */
+  .text-display {
+    flex: 1;
+    min-height: 24px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: flex-end;
+    overflow-y: auto;
+  }
+  .text-content {
+    width: 100%;
+    font-family: 'Roboto Mono', 'Noto Sans JP', monospace;
+    font-size: min(5vh, 1.5rem);
+    line-height: 1.6;
+    word-break: break-all;
+    min-height: 1.6em;
+  }
+  .text-content .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background: var(--primary);
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* --- Suggestion panels --- */
+  .suggestions-area {
+    display: flex;
+    flex-direction: column;
+    background: var(--separator);
+    gap: 1px;
+    border-top: 1px solid var(--separator);
+    flex-shrink: 0;
+  }
+  .panel { background: var(--surface); }
+  .panel-label {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 8px;
+    font-size: 10px; font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--separator);
+  }
+  .panel-label .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .panel-label .dot.tuned { background: var(--primary); }
+  .panel-label .dot.normal { background: var(--blue); }
+  .panel-label .dot.local { background: #34a853; }
+  .panel-label .ms {
+    margin-left: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 400;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .panel-label .ms.faster {
+    background: #34a853;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .suggestion-bar { display: flex; flex-direction: column; }
+  .suggestion-row {
+    display: flex; align-items: center;
+    min-height: 36px; padding: 2px 6px;
+    overflow-x: auto; scrollbar-width: none; gap: 2px;
+  }
+  .suggestion-row::-webkit-scrollbar { display: none; }
+  .suggestion-row + .suggestion-row { border-top: 1px solid var(--separator); }
+
+  .suggestion-bar .loading {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 108px; color: var(--text-secondary); font-size: 12px; gap: 6px;
+  }
+  .suggestion-bar .idle {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 108px; color: var(--outline); font-size: 12px;
+  }
+  .spinner-sm {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid var(--outline); border-top-color: var(--primary);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* v11 blocks */
+  .v11-block {
+    display: inline-flex; align-items: center;
+    background: var(--block-bg); color: var(--block-text);
+    border: none; border-radius: 6px;
+    padding: 3px 7px;
+    font-family: var(--font);
+    font-size: min(3vh, 15px); font-weight: 500;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: background 0.1s; line-height: 1.3;
+  }
+  .v11-block:active, .v11-block.active {
+    background: var(--block-active); color: var(--on-primary);
+  }
+
+  /* Web word blocks */
+  .word-block {
+    display: inline-flex; align-items: center;
+    background: var(--surface); color: var(--block-text);
+    border: 3px solid var(--blue); border-radius: 0.5vh;
+    padding: 2px 6px;
+    font-family: var(--font);
+    font-size: min(3vh, 15px); font-weight: 400;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: background 0.1s; line-height: 1.3;
+    margin-right: 0.3rem;
+  }
+  .word-block:hover, .word-block.active {
+    background: var(--primary); color: var(--on-primary);
+  }
+  .ellipsis {
+    font-family: 'Roboto Mono', monospace;
+    font-size: min(3vh, 15px); color: var(--text-secondary);
+    margin-right: 0.2rem; flex-shrink: 0;
+  }
+  .row-num {
+    font-size: 9px; font-weight: 600; color: var(--outline);
+    margin-right: 3px; flex-shrink: 0; min-width: 10px;
+  }
+  .empty-row { color: var(--outline); font-size: 12px; padding: 2px 6px; }
+
+  /* --- Keyboard --- */
+  .keyboard-area {
+    flex-shrink: 0;
+    padding: 6px;
+    background: var(--secondary);
+    border-top: 1px solid var(--separator);
+  }
+
+  /* Functions bar */
+  .fn-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    justify-content: center;
+  }
+  .fn-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+    border: 2px solid var(--blue);
+    border-radius: 8px;
+    width: 36px; height: 32px;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.1s;
+  }
+  .fn-btn .material-symbols-outlined { font-size: 18px; }
+  .fn-btn:active { background: var(--primary); }
+  .fn-btn.danger { border-color: #f28b82; }
+
+  /* 50-key grid */
+  .kana-grid {
+    direction: rtl;
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 3px;
+  }
+  .kana-key {
+    direction: ltr;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+    border: 3px solid var(--blue);
+    border-radius: 0.5vh;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Roboto Mono', 'Noto Sans JP', monospace;
+    font-size: max(2.5vh, 0.9rem);
+    padding: 0;
+    min-height: max(4vh, 28px);
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .kana-key.odd { background: var(--secondary); }
+  .kana-key:active { background: var(--primary); }
+  .kana-key.empty {
+    visibility: hidden;
+  }
+
+  /* Config bar */
+  .config-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 8px 2px;
+    font-size: 10px; color: var(--text-secondary);
+  }
+  .config-bar input {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--outline); border-radius: 3px;
+    padding: 2px 4px; font-size: 10px;
+    font-family: 'Roboto Mono', monospace; width: 140px;
+  }
+  .config-bar .err { color: #ea4335; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="screen">
+
+  <!-- Text display -->
+  <div class="text-display">
+    <div class="text-content" id="textDisplay"><span class="cursor"></span></div>
+  </div>
+
+  <!-- Suggestion panels -->
+  <div class="suggestions-area">
+    <div class="panel">
+      <div class="panel-label"><div class="dot local"></div>Local (gemma3-270m-dpo)<span class="ms" id="localMs"></span></div>
+      <div class="suggestion-bar" id="localBar"><div class="idle">入力してください</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><div class="dot tuned"></div>Tuned (v11)<span class="ms" id="tunedMs"></span></div>
+      <div class="suggestion-bar" id="tunedBar"><div class="idle">入力してください</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><div class="dot normal"></div>Gemini 2.5 Flash<span class="ms" id="normalMs"></span></div>
+      <div class="suggestion-bar" id="normalBar"><div class="idle">入力してください</div></div>
+    </div>
+  </div>
+
+  <!-- Keyboard -->
+  <div class="keyboard-area">
+    <div class="fn-bar">
+      <button class="fn-btn" onclick="doUndo()" title="Undo">
+        <span class="material-symbols-outlined">undo</span>
+      </button>
+      <button class="fn-btn" onclick="doBackspace()" title="Backspace">
+        <span class="material-symbols-outlined">backspace</span>
+      </button>
+      <button class="fn-btn danger" onclick="doClear()" title="Clear">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+      <button class="fn-btn" onclick="doPredict()" title="Predict">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <button class="fn-btn" onclick="doSpeak()" title="読み上げ">
+        <span class="material-symbols-outlined">volume_up</span>
+      </button>
+    </div>
+    <div class="kana-grid" id="kanaGrid"></div>
+    <div class="config-bar">
+      <span>API:</span>
+      <input type="text" id="apiBase" value="http://127.0.0.1:5001">
+      <span class="err" id="errText"></span>
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/tiny_segmenter-0.2.js"></script>
+<script>
+const segmenter = new TinySegmenter();
+
+// --- State ---
+let text = '';
+let history = [];  // for undo
+let fetchCtrl = null;
+let debounceTimer = null;
+
+// --- Keyboard layout (same as VOICE pv-fifty-key-keyboard) ---
+const SMALL_TOGGLE = '\uF000';
+const KANA = [
+  ['あ','い','う','え','お'],
+  ['か','き','く','け','こ'],
+  ['さ','し','す','せ','そ'],
+  ['た','ち','つ','て','と'],
+  ['な','に','ぬ','ね','の'],
+  ['は','ひ','ふ','へ','ほ'],
+  ['ま','み','む','め','も'],
+  ['や','ゆ','よ','',{l:'小',v:SMALL_TOGGLE}],
+  ['ら','り','る','れ','ろ'],
+  ['わ','を','ん','、','。'],
+  ['゛','゜','ー','？','！'],
+];
+
+const SMALL_MAP = new Map([
+  ['あ','ぁ'],['い','ぃ'],['う','ぅ'],['え','ぇ'],['お','ぉ'],
+  ['つ','っ'],['や','ゃ'],['ゆ','ゅ'],['よ','ょ'],['わ','ゎ'],
+  ['か','ゕ'],['け','ゖ'],
+]);
+const SMALL_REV = new Map(Array.from(SMALL_MAP, ([k,v]) => [v,k]));
+
+const DAKUTEN_MAP = new Map([
+  ['か','が'],['き','ぎ'],['く','ぐ'],['け','げ'],['こ','ご'],
+  ['さ','ざ'],['し','じ'],['す','ず'],['せ','ぜ'],['そ','ぞ'],
+  ['た','だ'],['ち','ぢ'],['つ','づ'],['て','で'],['と','ど'],
+  ['は','ば'],['ひ','び'],['ふ','ぶ'],['へ','べ'],['ほ','ぼ'],
+  ['う','ゔ'],
+]);
+const DAKUTEN_REV = new Map(Array.from(DAKUTEN_MAP, ([k,v]) => [v,k]));
+
+const HANDAKUTEN_MAP = new Map([
+  ['は','ぱ'],['ひ','ぴ'],['ふ','ぷ'],['へ','ぺ'],['ほ','ぽ'],
+]);
+const HANDAKUTEN_REV = new Map(Array.from(HANDAKUTEN_MAP, ([k,v]) => [v,k]));
+
+// --- Build keyboard ---
+function buildKeyboard() {
+  const grid = document.getElementById('kanaGrid');
+  grid.innerHTML = '';
+  KANA.forEach((col, ci) => {
+    col.forEach((key, ri) => {
+      const btn = document.createElement('button');
+      btn.className = 'kana-key' + (ci % 2 === 1 ? ' odd' : '');
+      btn.style.gridColumn = ci + 1;
+      btn.style.gridRow = ri + 1;
+      if (key === '') {
+        btn.className += ' empty';
+      } else if (typeof key === 'object') {
+        btn.textContent = key.l;
+        btn.addEventListener('click', () => onKey(key.v));
+      } else {
+        btn.textContent = key;
+        btn.addEventListener('click', () => onKey(key));
+      }
+      grid.appendChild(btn);
+    });
+  });
+}
+
+// --- Key handler ---
+function onKey(ch) {
+  history.push(text);
+
+  if (ch === '゛') {
+    // Dakuten: toggle on last char
+    if (text.length > 0) {
+      const last = text[text.length - 1];
+      const toggled = DAKUTEN_MAP.get(last) || DAKUTEN_REV.get(last);
+      if (toggled) text = text.slice(0, -1) + toggled;
+    }
+  } else if (ch === '゜') {
+    // Handakuten
+    if (text.length > 0) {
+      const last = text[text.length - 1];
+      const toggled = HANDAKUTEN_MAP.get(last) || HANDAKUTEN_REV.get(last);
+      if (toggled) text = text.slice(0, -1) + toggled;
+    }
+  } else if (ch === SMALL_TOGGLE) {
+    // Small char toggle
+    if (text.length > 0) {
+      const last = text[text.length - 1];
+      const toggled = SMALL_MAP.get(last) || SMALL_REV.get(last);
+      if (toggled) text = text.slice(0, -1) + toggled;
+    }
+  } else {
+    text += ch;
+  }
+
+  updateDisplay();
+  scheduleFetch();
+}
+
+function doBackspace() {
+  if (text.length > 0) {
+    history.push(text);
+    text = text.slice(0, -1);
+    updateDisplay();
+    scheduleFetch();
+  }
+}
+
+function doClear() {
+  if (text.length > 0) {
+    history.push(text);
+    text = '';
+    updateDisplay();
+    clearResults();
+  }
+}
+
+function doSpeak() {
+  if (!text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ja-JP';
+  speechSynthesis.speak(u);
+}
+
+function doUndo() {
+  if (history.length > 0) {
+    text = history.pop();
+    updateDisplay();
+    scheduleFetch();
+  }
+}
+
+function updateDisplay() {
+  const el = document.getElementById('textDisplay');
+  el.innerHTML = esc(text) + '<span class="cursor"></span>';
+}
+
+// --- Suggestion selection ---
+function selectSuggestion(fullText) {
+  history.push(text);
+  text = fullText;
+  updateDisplay();
+  scheduleFetch();
+}
+
+// --- v11 prefix split (same as iOS TextProcessing.splitForV11) ---
+function splitForV11(t) {
+  if (!t) return { lastSentence: '', prefix: '' };
+  const m = t.match(/[\u3041-\u3096\u3099-\u309fa-zA-Z0-9\uff41-\uff5a\uff21-\uff3a]*$/);
+  const prefix = m ? m[0] : '';
+  return { lastSentence: t.slice(0, t.length - prefix.length), prefix };
+}
+
+// --- Fetch predictions ---
+function scheduleFetch() {
+  clearTimeout(debounceTimer);
+  if (!text) { clearResults(); return; }
+  debounceTimer = setTimeout(doPredict, 300);
+}
+
+function clearResults() {
+  document.getElementById('tunedBar').innerHTML = '<div class="idle">入力してください</div>';
+  document.getElementById('normalBar').innerHTML = '<div class="idle">入力してください</div>';
+  document.getElementById('localBar').innerHTML = '<div class="idle">入力してください</div>';
+  document.getElementById('tunedMs').textContent = '';
+  document.getElementById('normalMs').textContent = '';
+  document.getElementById('localMs').textContent = '';
+  document.getElementById('errText').textContent = '';
+}
+
+let tunedMs = null, normalMs = null, localMs = null;
+
+async function doPredict() {
+  if (!text) return;
+  if (fetchCtrl) fetchCtrl.abort();
+  fetchCtrl = new AbortController();
+  const signal = fetchCtrl.signal;
+
+  const api = document.getElementById('apiBase').value.trim();
+  const { lastSentence, prefix } = splitForV11(text);
+  const body = JSON.stringify({ last_sentence: lastSentence, prefix });
+  const headers = { 'Content-Type': 'application/json' };
+
+  // Reset all bars to loading
+  document.getElementById('tunedBar').innerHTML = '<div class="loading"><span class="spinner-sm"></span></div>';
+  document.getElementById('normalBar').innerHTML = '<div class="loading"><span class="spinner-sm"></span></div>';
+  document.getElementById('localBar').innerHTML = '<div class="loading"><span class="spinner-sm"></span></div>';
+  document.getElementById('tunedMs').textContent = '';
+  document.getElementById('normalMs').textContent = '';
+  document.getElementById('localMs').textContent = '';
+  document.getElementById('tunedMs').classList.remove('faster');
+  document.getElementById('normalMs').classList.remove('faster');
+  document.getElementById('localMs').classList.remove('faster');
+  document.getElementById('errText').textContent = '';
+  tunedMs = null;
+  normalMs = null;
+  localMs = null;
+
+  // Fire both requests in parallel, render each as it arrives
+  const tunedPromise = fetch(`${api}/compare/tuned`, { method: 'POST', headers, body, signal })
+    .then(async res => {
+      if (!res.ok) throw new Error(`tuned:${res.status}`);
+      const data = await res.json();
+      renderTuned(data.raw || [], data.input?.last_sentence || lastSentence);
+      tunedMs = data.ms;
+      document.getElementById('tunedMs').textContent = tunedMs + 'ms';
+      updateFasterBadge();
+    })
+    .catch(err => {
+      if (err.name === 'AbortError') return;
+      document.getElementById('tunedBar').innerHTML = '<div class="idle">error</div>';
+    });
+
+  const normalPromise = fetch(`${api}/compare/normal`, { method: 'POST', headers, body, signal })
+    .then(async res => {
+      if (!res.ok) throw new Error(`normal:${res.status}`);
+      const data = await res.json();
+      renderNormal(data.items || [], data.input?.text || text);
+      normalMs = data.ms;
+      document.getElementById('normalMs').textContent = normalMs + 'ms';
+      updateFasterBadge();
+    })
+    .catch(err => {
+      if (err.name === 'AbortError') return;
+      document.getElementById('normalBar').innerHTML = '<div class="idle">error</div>';
+    });
+
+  const localPromise = fetch(`${api}/compare/local`, { method: 'POST', headers, body, signal })
+    .then(async res => {
+      if (!res.ok) throw new Error(`local:${res.status}`);
+      const data = await res.json();
+      renderTunedTo('localBar', data.raw || [], data.input?.last_sentence || lastSentence);
+      localMs = data.ms;
+      document.getElementById('localMs').textContent = localMs + 'ms';
+      updateFasterBadge();
+    })
+    .catch(err => {
+      if (err.name === 'AbortError') return;
+      document.getElementById('localBar').innerHTML = '<div class="idle">error</div>';
+    });
+
+  await Promise.allSettled([tunedPromise, normalPromise, localPromise]);
+}
+
+function updateFasterBadge() {
+  const els = [
+    { el: document.getElementById('tunedMs'), ms: tunedMs },
+    { el: document.getElementById('normalMs'), ms: normalMs },
+    { el: document.getElementById('localMs'), ms: localMs },
+  ];
+  els.forEach(e => e.el.classList.remove('faster'));
+  const ready = els.filter(e => e.ms != null);
+  if (ready.length >= 2) {
+    const fastest = ready.reduce((a, b) => a.ms < b.ms ? a : b);
+    fastest.el.classList.add('faster');
+  }
+}
+
+// --- Render tuned (v11 blocks) ---
+function renderTuned(rawList, lastSentence) { renderTunedTo('tunedBar', rawList, lastSentence); }
+function renderTunedTo(barId, rawList, lastSentence) {
+  const bar = document.getElementById(barId);
+  if (!rawList.length) { bar.innerHTML = emptyRow(); return; }
+  bar.innerHTML = rawList.map((raw, i) => {
+    const blocks = raw.split('/').filter(Boolean);
+    let cum = '';
+    const html = blocks.map(b => {
+      cum += b;
+      const full = lastSentence + cum;
+      return `<button class="v11-block" data-full="${esc(full)}" `
+        + `onclick="selectSuggestion(this.dataset.full)" `
+        + `onmouseenter="hlBlock(this)" onmouseleave="hlBlockClear(this)">${esc(b)}</button>`;
+    }).join('');
+    return `<div class="suggestion-row"><span class="row-num">${i+1}</span>${html}</div>`;
+  }).join('');
+}
+
+// --- Render normal (web word blocks) ---
+function renderNormal(items, inputText) {
+  const bar = document.getElementById('normalBar');
+  if (!items.length) { bar.innerHTML = emptyRow(); return; }
+  const inputTokens = segmenter.segment(inputText);
+
+  bar.innerHTML = items.map((item, ri) => {
+    const full = item.full || '';
+    const tokens = segmenter.segment(full);
+    let cl = 0;
+    for (let j = 0; j < Math.min(inputTokens.length, tokens.length); j++) {
+      if (tokens[j] === inputTokens[j]) cl++; else break;
+    }
+    const visible = tokens.slice(cl);
+    const el = cl > 0 ? '<span class="ellipsis">… </span>' : '';
+
+    // Build cumulative full text for each word position
+    const prefixText = tokens.slice(0, cl).join('');
+    let cumText = prefixText;
+    const bHTML = visible.map((t, j) => {
+      cumText += t;
+      const snapshot = cumText;
+      return `<button class="word-block" data-idx="${j}" data-full="${esc(snapshot)}" `
+        + `onclick="selectSuggestion(this.dataset.full)" `
+        + `onmouseenter="hlWord(this)" onmouseleave="hlWordClear(this)">${esc(t)}</button>`;
+    }).join('');
+    return `<div class="suggestion-row"><span class="row-num">${ri+1}</span>${el}${bHTML}</div>`;
+  }).join('');
+}
+
+function emptyRow() { return '<div class="suggestion-row"><span class="empty-row">---</span></div>'; }
+
+// --- Highlight helpers ---
+function hlBlock(el) {
+  const row = el.closest('.suggestion-row');
+  const all = [...row.querySelectorAll('.v11-block')];
+  const idx = all.indexOf(el);
+  all.forEach((b, i) => b.classList.toggle('active', i <= idx));
+}
+function hlBlockClear(el) {
+  el.closest('.suggestion-row').querySelectorAll('.v11-block').forEach(b => b.classList.remove('active'));
+}
+function hlWord(el) {
+  const row = el.closest('.suggestion-row');
+  const idx = parseInt(el.dataset.idx);
+  row.querySelectorAll('.word-block').forEach(b => b.classList.toggle('active', parseInt(b.dataset.idx) <= idx));
+}
+function hlWordClear(el) {
+  el.closest('.suggestion-row').querySelectorAll('.word-block').forEach(b => b.classList.remove('active'));
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// --- Init ---
+buildKeyboard();
+updateDisplay();
+</script>
+</body>
+</html>

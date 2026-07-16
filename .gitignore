@@ -1,0 +1,28 @@
+# Python / venv
+.venv/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+
+# Secrets / Keys
+*.pem
+*.p12
+*.key
+*.secret
+*service_account*.json
+*client_secret*.json
+credentials.json
+token.json
+.env
+.env.local
+
+# Local model cache
+models/
+*.safetensors
+*.bin

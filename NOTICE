@@ -1,0 +1,10 @@
+tone-comparison
+Copyright 2026 Katsuki Ono
+
+This product includes software developed by:
+
+  TinySegmenter — Super compact Japanese tokenizer in Javascript
+  Version 0.2 (bundled at static/tiny_segmenter-0.2.js)
+  Copyright (c) 2008 Taku Kudo <taku@chasen.org>
+  Licensed under the BSD 2-Clause License.
+  https://chasen.org/~taku/software/TinySegmenter/
